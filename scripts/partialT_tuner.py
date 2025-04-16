@@ -20,7 +20,8 @@ import numpy as np
 import subprocess
 import re
 import json
-
+from statistics import mean, stdev
+from Bio.PDB import PDBParser, MMCIFParser, Superimposer
 #%%Functions
 def parse_MPNN_file (file):
     # Given an MPNN formatted file it parses it sequence by sequence, stores each sequence in a list and each score in another list
@@ -57,12 +58,81 @@ def parse_MPNN_folder(folder):
             
     return best_sequences
 
-def extract_partialT_df ():
-    # Given a data frame it takes the first two digits of the columnn 'file_ID' and stores them in a new columm 'partial_T'
-    # Then it changes the file name removing the first 3 digits
-    # For example: 10_edu.pdb would have a file ID of edu.pdb and a partial_T of 10
+def extract_plddt_from_cif(cif_path):
+    plddt_scores = []
+    with open(cif_path, 'r') as f:
+        for line in f:
+            if line.startswith("ATOM"):
+                fields = line.strip().split()  # or split() if it's space-delimited
+                try:
+                    score = float(fields[14])  # 15th field (index 14)
+                    plddt_scores.append(score)
+                except (ValueError, IndexError):
+                    continue
+    return plddt_scores
+
+def pLDDT_summary_generator(scores):
+    summary_stats = [round(mean(scores), 2),round(stdev(scores), 2),round(min(scores), 2), round(max(scores), 2)]
+    return summary_stats
+
+def load_structure(path, struct_id):
+        ext = Path(path).suffix.lower()
+        if ext == '.pdb':
+            parser = PDBParser(QUIET=True)
+        elif ext == '.cif':
+            parser = MMCIFParser(QUIET=True)
+        else:
+            raise ValueError("Unsupported file format. Use .pdb or .cif")
+        return parser.get_structure(struct_id, path)
+
+def calculate_rmsd(structure_path1, structure_path2, chain_id='A'):
+    """
+    Calculates RMSD between two structures (.pdb or .cif) using CA atoms from a specified chain.
+
+    Parameters:
+    - structure_path1 (str): Path to the first structure file (.pdb or .cif).
+    - structure_path2 (str): Path to the second structure file.
+    - chain_id (str): Chain identifier (default: 'A').
+
+    Returns:
+    - float: RMSD value.
+    """
+
+    structure1 = load_structure(structure_path1, "struct1")
+    structure2 = load_structure(structure_path2, "struct2")
+
+    atoms1 = [atom for atom in structure1[0][chain_id].get_atoms() if atom.get_id() == 'CA']
+    atoms2 = [atom for atom in structure2[0][chain_id].get_atoms() if atom.get_id() == 'CA']
+
+    if len(atoms1) != len(atoms2):
+        raise ValueError("Structures do not have the same number of CA atoms.")
+
+    sup = Superimposer()
+    sup.set_atoms(atoms1, atoms2)
+    sup.apply(structure2.get_atoms())
+
+    return sup.rms
+
+def seq_comparison(seq1, seq2):
+    """
+    Compare two sequences and count the number of positions where they differ.
+
+    Parameters:
+    - seq1 (str): First sequence
+    - seq2 (str): Second sequence
+
+    Returns:
+    - int: Number of differing positions
+    """
+    # Compare up to the length of the shortest sequence
+    min_len = min(len(seq1), len(seq2))
+    differences = sum(1 for i in range(min_len) if seq1[i] != seq2[i])
     
-    return
+    # Optionally count differences due to length mismatch
+    differences += abs(len(seq1) - len(seq2))
+
+    return differences
+
 #%% Input check
 
 parser = argparse.ArgumentParser(description="Generate summary dataframes for a project structures")
@@ -190,10 +260,61 @@ for file in json_path.iterdir():
     f"--db_dir=/mnt/data/alphafold3/alphafold_databases/ "
     f"--model_dir=/mnt/data/alphafold3/models/"
     )
-    af_process = subprocess.run(af_command, shell = True, text=True)
+    #af_process = subprocess.run(af_command, shell = True, text=True)
 
-# Parse pLDDT
+# Parse pLDDT and compute RMSD with the original structure
+# I wil parse the sequences, updating the list from [file, seq, score] to [file, seq, score, pLDDT_mean, "stdev_pLDDT", "min_pLDDT","max_pLDDT", "RMSD"]
+sequences_plus_pLDDT = []
+for sequence_info in sequences:
+    cif_name = str(Path(sequence_info[0]).stem)[:-6]
+    pdb_name = cif_name[3:]
+    print(pdb_name)
+    AF3_cif_path = f"partial_T_tuning/AF3_outputs/{cif_name.lower()}.pdb_0/seed-1_sample-0/model.cif"
+    original_pdb_path = f"input_pdbs/{pdb_name}.pdb"
 
-# RMSD with the original structure file
+    pLDDT_scores = extract_plddt_from_cif(AF3_cif_path)
+    pLDDT_summary = pLDDT_summary_generator(pLDDT_scores)
+    RMSD = calculate_rmsd(AF3_cif_path, original_pdb_path, "A")
+
+    updated_information = list(sequence_info)
+    
+    # Flatten the list and convert np.float64 to regular float
+    updated_information.extend([float(x) for x in pLDDT_summary])
+    updated_information.append(float(RMSD))
+    
+    sequences_plus_pLDDT.append(updated_information)
+
+print(sequences_plus_pLDDT[1])
 
 # Update the original dataframe with all the new information
+# First I split the partial T used from the name of the file and clean it
+final_sequences =[]
+for seq_info in sequences_plus_pLDDT :
+    cleaned_info = list(seq_info)
+    cleaned_info[0] = cleaned_info[0][35:-5]
+    partial_T_used = cleaned_info[0][:2]
+    cleaned_info[0] = cleaned_info[0][3:]
+    cleaned_info.append(partial_T_used)
+    final_sequences.append(cleaned_info)
+print(final_sequences[1])
+print(final_sequences[5])
+
+# Final sequences format ["file_name", "MPNN_seq", "pLDDT_mean", "pLDDT_mean", "pLDDT_mean", "pLDDT_mean", "RMSD", "partial_T"]
+# Now i use the first element of each final sequence to search for the proper row in the original df, and concat those rows together
+final_df = pd.DataFrame(columns=list(sample_df.columns)+[ "MPNN_seq", "MPNN_score", "pLDDT_mean", "pLDDT_stdev", "pLDDT_min", "pLDDT_max", "RMSD", "partial_T"])
+for sequence_info in final_sequences:
+    entry_id = sequence_info[0]
+    new_info = sequence_info[1:]
+    row = sample_df[sample_df['file_ID'] == entry_id].values.flatten().tolist()
+    row.extend(new_info)
+    small_df = pd.DataFrame([row], columns=final_df.columns)
+    final_df = pd.concat([final_df,small_df])
+
+# Now I wanna compute the number of changes in the original sequence and the MPNN sequence
+for index, row in final_df.iterrows():
+    n_changes = seq_comparison(str(row['sequence']), str(row['MPNN_seq']))
+    final_df.loc[index, 'changes'] = n_changes
+# Then I reorder the columns properly
+desired_order = ["file_ID","category", "partial_T", "pLDDT_mean", "pLDDT_stdev", "pLDDT_min", "pLDDT_max", "RMSD","sequence","MPNN_seq","length", "changes", "MPNN_score","DSSP","H%","E%"]
+final_df = final_df[desired_order]
+final_df.to_csv('partial_T_sampling.csv')
