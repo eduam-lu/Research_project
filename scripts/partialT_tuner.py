@@ -204,7 +204,7 @@ json_command = (
     + "/test.jsonl"
 )
 
-#subprocess.run(json_command, shell=True)
+subprocess.run(json_command, shell=True)
 
 MPNN_command = (
     "python ~/ProteinMPNN/protein_mpnn_run.py --num_seq_per_target=20 --batch_size=10 --out_folder=" #ask about batch_size
@@ -214,7 +214,7 @@ MPNN_command = (
     + "/test.jsonl" # ask about sampling 
 )
 
-#subprocess.run(MPNN_command, shell=True)
+subprocess.run(MPNN_command, shell=True)
 
 # Parse the MPNN output to select the sequence with the least score and append the sequence and the score to a list
 sequences = parse_MPNN_folder("partial_T_tuning/MPNN_outputs/seqs") # Contains a list of lists with the format [[file, sequence, score], ...]
