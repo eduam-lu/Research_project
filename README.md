@@ -47,20 +47,41 @@ python /1_tuning_scripts/rep_sample_generator.py
 
 # 3_auxiliary_scripts
 ---
-- **folder_lower.py**
-- **pdb_converter.py**
-- **structure_relaxation.py**
-- **delta_G_predictor**
+- **folder_lower.py** : this auxiliary script is designed to given a folder, it turns all the file names within it to all lowercase later. It is used within the main scripts to avoid case sensitivity issues when accesing folders or comparing structures. It can also be used as a standalone program
+- **pdb_converter.py** : this script uses pymol to transform all the .cif files found within a folder into .pdb format. It is used several times within the main scripts as some prediction methods output cifs, others output directly pdbs. Given that ProteinShapedesign does not offer .cif support, .pdb format was selected as the standard.
+- **structure_relaxation.py** : structures passed to Protein ShapeDesign must be in a minimal energy state, as the software evaluates the optimisation process with several rounds of minimisation. This scripts implements the Fast Relax protocol from the Rosetta documentation found here https://docs.rosettacommons.org/docs/latest/scripting_documentation/RosettaScripts/Movers/movers_pages/FastRelaxMover and it needs to be run from the pyrosetta2 environmment (see section 7)
+- **delta_G_predictor**: given a folder with protein structures, this script returns a dictionary with the global delta G (stability) in kcal/mol for each structure. This script is an adapted version of the .ipynb found in the repo for Cagiada et al.'s 2025 paper "Predicting absolute protein folding stability using generative models" (https://github.com/KULL-Centre/_2024_cagiada_stability/tree/main). Delta G is estimated from a regression model that correlates stability in kcal/mol with the sum of likelihood scores obtained from subjecting the sequence to the inverse folding model ESM-IF. This script needs to be run from the esm_stability environment (see section 7)
 
 # 4_visualisation scripts
 ---
+Two interactive python notebooks were developed to visualise benchmarking results and generate the plots for the report
+**plot_monomer.ipynb** makes all the possible monomer condition comparison in terms of stability, solubility and hydropathy (and RMSD and pLDDT when possible) with the data contained in original_structures.csv (original structures), RF_only_metrics.csv (monomers treated with RF diffusion) and monomer_metrics.csv (capsomers generated with Proteinshapedesign with and without RF treatment). The notebook contains the paired plots, boxplots and statistical analyses for the comparisons. Also includes the code for the selected comparisons shown in the report.
+**plot_oligomer.ipynb** compares oligomers and capsids with and without treatment. Dimers (dimer_metrics.csv), trimers (trimer_metrics.csv) and pentamers(pentamer_metrics.csv) with and without are compared in terms of pLDDT and TM score, while capsids with treatment (capsid_metrics_w.csv) and without (capsid_metrics_wo.csv) are compared in terms of interface delta delta G, SASA metrics and shape complementarity. Again, all possible boxplot, paired plots and statistical analysis of the comparisons are shown. 
+The notebook also contains the selection process for "mixed oligomers", were the best predicted oligomer per sample is selected and plotted.
 
 # 5_inputs
 ---
+This folder contains all the data needed to replicate all the analyses.
+Input pdbs contains 96 protein structures selected from the Protein Building Block database based on their previous performance in the ProteinShapeDesign pipeline, their potential for empirical testing and for their ability of predicting at least one oligomer properly with multimer prediction methods.
 
+Symdefs contains the corresponding symmetry definition for each input pdb. A symmetry definition is the set of mathematical transformations needed to generate a whole capsid by repeating a single capsomer. Each input pdb has assigned to itself the symmetry definition of the natural capsid where the ideal shape with which they match was extracted.
+
+Additionally, although it is technically an output from the improved shapedesign and the control, the capsids generated in the project have also been made available here: ; as they are needed to reproduce the benchmarking process
 # 6_outputs
 ---
-
+Here I break down each of the metrics generated at different stages of the project, in chronological order:
+- all_structures.csv
+- representative_sample.csv
+- partial_T_tuning.csv
+- prediction_methods_comparison.csv
+- original_structures_def.csv
+- RF_only_metrics.csv
+- monomer_metrics.csv
+- dimer_metrics.csv
+- trimer_metrics.csv
+- pentamer_metrics.csv
+- capsid_metrics_w.csv
+- capsid_metrics_wo.csv
 # 7_envs
 ---
 
@@ -70,6 +91,9 @@ python /1_tuning_scripts/rep_sample_generator.py
 # References
 ---
 Mads thesis
+
 RF diffusion
+
 DSSP
+
 Relaxation
