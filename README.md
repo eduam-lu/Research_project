@@ -1,4 +1,6 @@
-Welcome to the github repo for my LU Msc in Bioinformatics' Research project titled "Enhancing shape directed design of protein containers’ subunits using the generative AI method RFdiffusion". Here I have made available all the code generated, all the input structures and data needed to replicate my analyses, the data produced as an output and used for visualization of results and ,lastly , all the environments, software versions and programs used in the project.
+# Introduction
+---
+Welcome to the github repo for my LU Msc in Bioinformatics' Research project titled "Enhancing shape directed design of protein containers’ subunits using the generative AI method RFdiffusion" (https://github.com/eduam-lu/Research_project/). Here I have made available all the code generated, all the input structures and data needed to replicate my analyses, the data produced as an output and used for visualization of results and ,lastly , all the environments, software versions and programs used in the project.
 
 The project consists on the complementation of the Proteinshapedesign pipeline developed in "A dance with Protein Assemblies" Mads Jeppesen, 2025. This software is built to redesign an input pdb structure (identified with a potential to serve as a capsomer for self assembling capsids), optimising it for capsid formation. In this work, I have tested the viability of introducing an RF diffusion pretreatment to the input structures. RF diffusion is a denoising diffusion neural network model that is able to generate protein backbone variability from a given input structure. By generating and filtering structural variability over the inputs for ProteinShapedesign, we expected to obtained better capsomers from the original software. Results are discussed in the Report.pdf file.
 
@@ -151,11 +153,11 @@ NOTE THAT except the main environment, all the others require GPU usage, and the
 # External installations
 ---
 Additionally, some of the programs used in the project need to be downloaded manually:
-- **RF diffusion** : RF diffusion was cloned from this repository https://github.com/RosettaCommons/RFdiffusion and installed following the instructions found there (version: )
-- **Protein MPNN** : ProteinMPNN was cloned from this repository https://github.com/dauparas/ProteinMPNN and installed following the instructions found there (version: )
-- **pymol** : pymol was downloaded from https://www.pymol.org/support.html?#installation and installed following the instructions found there (version: ). Note, it requires a usage license
-- **Protein-sol**: protein-sol was downloaded from https://protein-sol.manchester.ac.uk/software and installed following the instructions found there (version: )
-- **MMalign**: MMalign was downloaded from https://zhanggroup.org/MM-align/ and installed following the instructions found there (version: )
+- **RF diffusion** : RF diffusion was cloned from this repository https://github.com/RosettaCommons/RFdiffusion and installed following the instructions found there (version: 1.1.0 )
+- **Protein MPNN** : ProteinMPNN was cloned from this repository https://github.com/dauparas/ProteinMPNN and installed following the instructions found there (version: 1.0.1)
+- **pymol** : pymol was downloaded from https://www.pymol.org/support.html?#installation and installed following the instructions found there (version:3.1.6.0). Note, it requires a usage license
+- **Protein-sol**: protein-sol was downloaded from https://protein-sol.manchester.ac.uk/software and installed following the instructions found there (version: 1.0, accessed 06-2025)
+- **MMalign**: MMalign was downloaded from https://zhanggroup.org/MM-align/ and installed following the instructions found there (version: 2021/08/16)
 
 Lastly, the code for running protein shapedesign isn't publicly available yet. It is available for request at ingemar.andre@biochemistry.lu.se
 # References
@@ -167,3 +169,17 @@ RF diffusion
 DSSP
 
 Relaxation
+
+Chai
+
+Alphafold
+
+ESM
+
+MPN
+
+Protein-sol
+
+Kyte dolittle
+
+DSSP
