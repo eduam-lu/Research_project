@@ -40,9 +40,9 @@ python /1_tuning_scripts/rep_sample_generator.py
 ---
 
 ### improved_pipeline.py and functions.py
-![My diagram](images/Figure 3.png)
+![My diagram](images/Figure%203.png)
 ### benchmark.py and functions_benchmark.py
-
+![My diagram](images/Figure%202.png)
 ### control_shapedesign.py 
 
 # 3_auxiliary_scripts
@@ -87,21 +87,25 @@ Here I break down each of the metrics generated at different stages of the proje
 # 7_envs
 ---
 Seven different package environments were used in this project:
-- **main**
-- **esm_stability**
-- **chai**
-- **SE3nv**
-- **zernike_pyrosetta**
-- **pyrosetta2**
-- **alphafold3**
+
+- **main**: main evnironment where every main, visualising and tuning script was executed. The main downloads are: pandas, Biopython, pymol,seaborn, scipy and matplotlib
+- **esm_stability**: environment needed to run delta_G_predictor.py. It contains all the packages needed to run the ESM IF model, necessary to estimate the delta G. NOTE: the yml file while also download the model weights, which are quite heavy
+- **chai**: environment used by the chai function to run the Chai 1 structure prediction model
+- **SE3nv**: this environment is required to run both the RF diffusion and ProteinMPNN functions
+- **zernike_pyrosetta**: this environment is required to run proteinshape design
+- **pyrosetta2**: this environment is required to run the FastRelax protocol in the structure_relaxation.py script
+- **alphafold3**: this environment is required to run the Alphafold3 function
+
+NOTE THAT except the main environment, all the others require GPU usage, and therefore should be taylored to each specific GPU. The GPU used in this project was
+
 # External installations
 ---
 Additionally, some of the programs used in the project need to be downloaded manually:
-- **RF diffusion**
-- **Protein MPNN**
-- **pymol**
-- **Protein-sol**
-- **MMalign**
+- **RF diffusion** : RF diffusion was cloned from this repository https://github.com/RosettaCommons/RFdiffusion and installed following the instructions found there (version: )
+- **Protein MPNN** : ProteinMPNN was cloned from this repository https://github.com/dauparas/ProteinMPNN and installed following the instructions found there (version: )
+- **pymol** : pymol was downloaded from https://www.pymol.org/support.html?#installation and installed following the instructions found there (version: ). Note, it requires a usage license
+- **Protein-sol**: protein-sol was downloaded from https://protein-sol.manchester.ac.uk/software and installed following the instructions found there (version: )
+- **MMalign**: MMalign was downloaded from https://zhanggroup.org/MM-align/ and installed following the instructions found there (version: )
 
 Lastly, the code for running protein shapedesign isn't publicly available yet. It is available for request at ingemar.andre@biochemistry.lu.se
 # References
