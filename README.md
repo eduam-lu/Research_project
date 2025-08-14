@@ -40,7 +40,7 @@ python /1_tuning_scripts/rep_sample_generator.py
 ---
 
 ### improved_pipeline.py and functions.py
-
+![My diagram](images/Figure 3.png)
 ### benchmark.py and functions_benchmark.py
 
 ### control_shapedesign.py 
