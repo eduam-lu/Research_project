@@ -67,13 +67,17 @@ python /1_tuning_scripts/rep_sample_generator.py
 ```
 ![My diagram](images/Figure%203.png)
 ### benchmark.py and functions_benchmark.py
-
+The benchmarking process is designed to obtain data in order to compare structures with and without RF diffusion treatment at 3 levels: monomer, oligomer and whole capsids.
 The benchmark.py script can be run as follows:
 ```bash
 python /1_tuning_scripts/rep_sample_generator.py 
 ```
 ![My diagram](images/Figure%202.png)
 ### control_shapedesign.py 
+A control script was designed to obtain capsids with the same capsid filtering process performed in the improved pipeline. That way capsid comparison is fairer. The script accepts a folder with the input PBBs and a folder with the corresponding symmetry definitions.
+1. Input is checked to be correct
+2. Each structure is subjected to 25 iterations of proteinshapedesign
+3. Capsids are grouped by their original structure and a score is computed: ddg, SASA metrics and shape complementarity are normalised and added with equal weights. The best score per group is selected as a final capsid and saved in a sepparate folder
 
 The benchmark.py script can be run as follows:
 ```bash
