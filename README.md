@@ -72,24 +72,38 @@ Additionally, although it is technically an output from the improved shapedesign
 # 6_outputs
 ---
 Here I break down each of the metrics generated at different stages of the project, in chronological order:
-- all_structures.csv
-- representative_sample.csv
-- partial_T_tuning.csv
-- prediction_methods_comparison.csv
-- original_structures_def.csv
-- RF_only_metrics.csv
-- monomer_metrics.csv
-- dimer_metrics.csv
-- trimer_metrics.csv
-- pentamer_metrics.csv
-- capsid_metrics_w.csv
-- capsid_metrics_wo.csv
+- **all_structures.csv**: structural summary of the 96 selected PBBs (sequence, sequence length, DSSP...)
+- **representative_sample.csv** : structures selected as a representative sample and their corresponding structural metrics
+- **partial_T_tuning.csv** : metrics for the backbones generated when testing partial T over the representative sample
+- **prediction_methods_comparison.csv**: performance metrics of the three different methods tested over the partial T tuning sequences
+- **original_structures_def.csv**: metrics of the original PBBs including stabilioty, solubility, hydropathy...
+- **RF_only_metrics.csv**: metrics for the selected capsomers before applying shapedesign including stability, solubility, hydropathy...
+- **monomer_metrics.csv**: benchmarking metrics for monomers generated with and without RF pretreatment
+- **dimer_metrics.csv** : benchmarking metrics for dimers generated with and without RF pretreatment
+- **trimer_metrics.csv**: benchmarking metrics for trimers generated with and without RF pretreatment
+- **pentamer_metrics.csv**: benchmarking metrics for pentamers generated with and without RF pretreatment
+- **capsid_metrics_w.csv**: benchmarking metrics for capsids generated with RF pretreatment
+- **capsid_metrics_wo.csv** : benchmarking metrics for monomers generated without RF pretreatment
 # 7_envs
 ---
-
+Seven different package environments were used in this project:
+- **main**
+- **esm_stability**
+- **chai**
+- **SE3nv**
+- **zernike_pyrosetta**
+- **pyrosetta2**
+- **alphafold3**
 # External installations
 ---
+Additionally, some of the programs used in the project need to be downloaded manually:
+- **RF diffusion**
+- **Protein MPNN**
+- **pymol**
+- **Protein-sol**
+- **MMalign**
 
+Lastly, the code for running protein shapedesign isn't publicly available yet. It is available for request at ingemar.andre@biochemistry.lu.se
 # References
 ---
 Mads thesis
