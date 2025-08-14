@@ -1,0 +1,9 @@
+name: pyrosetta2
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.11
+  - pip=25.0.1
+  - pip:
+    - pyrosetta @ file:///home/ingemar/git/rosetta/source/build/PyRosetta/Linux-5.4.0-205-generic-x86_64-with-glibc2.31/clang-10.0.0/python-3.11/release.serialization/build
