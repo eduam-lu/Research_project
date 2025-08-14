@@ -38,13 +38,47 @@ python /1_tuning_scripts/rep_sample_generator.py
 ```
 # 2_main_scripts 
 ---
-
+This folder contain the scripts for running the improved pipeline and the code used for benchmarking it
 ### improved_pipeline.py and functions.py
+The improved pipeline accepts an input folder with .pdb structures and another with the corresponding symmetry definitions. They are processed as follows:
+1. Input is checked to be correct and loaded as a pandas dataframe. For each structure, the sequence and global fold stability is extracted
+2. Each input structure is subjected to 10 iterations of RF diffusion in "partial diffusion" mode and another 10 in "fold conditioning" mode. Output backbones are saved in a subfolder
+3. For each backbone generated, 40 sequences are predicted with ProteinMPNN. Output fastas are saved in a sepparate folder
+4. Sequences and global scores are extracted from the fastas and appended to a dataframe. For each backbone, the top 20 sequences regarding global_score are selected
+5. Sequences are filtered again with a 1D complexity filter (removes seqs with more than 4 of the same aminoacid in a row)
+6. High throughput structure prediction round with ESM fold (atlas webserver). Output structures are saved in a subfolder and failed predictions are removed
+7. 3D metrics and sequences are computed for ESM results and stored in a dataframe
+8. The dataframe is filtered: pLDDT > 80, 1 < RMSD < 8, clashes_per_atom < 1.01
+9. Remaining sequences are used for a second round of structural prediction with Chai 1. Output structures are saved in a subfolder
+10. 3D metrics and sequences are computed for Chai results and stored in a dataframe
+11. The dataframe is filtered: pLDDT > 80, 1 < RMSD < 8, clashes_per_atom < 1.01
+12. A second filtering is applied to chai structures: structures are grouped by their original .pdb, pLDDT and stability are normalised in each group and summed up with equal weights to generate a score. The top 5 candidates per input structures by score pass the filter
+13. Each surviving structure is relaxed using the FastRelax protocol
+14. Each relaxed structure is subjected to 5 iterations of proteinshapedesign, generating 5 different capsids per monomer (and therefore 25 capsids per input structure)
+15. Capsids are grouped by their original structure and a score is computed: ddg, SASA metrics and shape complementarity are normalised and added with equal weights. The best score per group is selected as a final capsid and saved in a sepparate folder
+
+There are 3 subgroups of functions inside functions.py:
+- Model functions: designed to run all the models of the pipeline such as RF diffusion, ESM, MPNN, Chai, Shapedesign...
+- Metrics functions: designed to extract information from the structures and generate the metrics for the outputs. Filtering functions are also included here
+- Auxiliary functions: complementary utilities such as organising folders, convert and rename files...
+The improved_pipeline.py script can be run as follows:
+```bash
+python /1_tuning_scripts/rep_sample_generator.py 
+```
 ![My diagram](images/Figure%203.png)
 ### benchmark.py and functions_benchmark.py
+
+The benchmark.py script can be run as follows:
+```bash
+python /1_tuning_scripts/rep_sample_generator.py 
+```
 ![My diagram](images/Figure%202.png)
 ### control_shapedesign.py 
 
+The benchmark.py script can be run as follows:
+```bash
+python /1_tuning_scripts/rep_sample_generator.py 
+```
 # 3_auxiliary_scripts
 ---
 - **folder_lower.py** : this auxiliary script is designed to given a folder, it turns all the file names within it to all lowercase later. It is used within the main scripts to avoid case sensitivity issues when accesing folders or comparing structures. It can also be used as a standalone program
