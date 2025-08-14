@@ -55,7 +55,9 @@ python /1_tuning_scripts/rep_sample_generator.py
 # 4_visualisation scripts
 ---
 Two interactive python notebooks were developed to visualise benchmarking results and generate the plots for the report
+
 **plot_monomer.ipynb** makes all the possible monomer condition comparison in terms of stability, solubility and hydropathy (and RMSD and pLDDT when possible) with the data contained in original_structures.csv (original structures), RF_only_metrics.csv (monomers treated with RF diffusion) and monomer_metrics.csv (capsomers generated with Proteinshapedesign with and without RF treatment). The notebook contains the paired plots, boxplots and statistical analyses for the comparisons. Also includes the code for the selected comparisons shown in the report.
+
 **plot_oligomer.ipynb** compares oligomers and capsids with and without treatment. Dimers (dimer_metrics.csv), trimers (trimer_metrics.csv) and pentamers(pentamer_metrics.csv) with and without are compared in terms of pLDDT and TM score, while capsids with treatment (capsid_metrics_w.csv) and without (capsid_metrics_wo.csv) are compared in terms of interface delta delta G, SASA metrics and shape complementarity. Again, all possible boxplot, paired plots and statistical analysis of the comparisons are shown. 
 The notebook also contains the selection process for "mixed oligomers", were the best predicted oligomer per sample is selected and plotted.
 
