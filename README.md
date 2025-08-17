@@ -36,7 +36,7 @@ At the light of the results, ESM Fold was selected for high throughput predictio
 
 The script can be run as follows:
 ```bash
-python /1_tuning_scripts/prediction_performance.py --sequences 6_outputs/partial_T_sampling.csv
+python /1_tuning_scripts/prediction_performance.py --sequences 6_outputs/partial_T_tuning.csv
 ```
 # 2_main_scripts 
 ---
