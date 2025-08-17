@@ -16,9 +16,9 @@ The programs that require adjustments are computationally intensive and time con
 
 This way it is ensured that different sizes and folds will be considered when assessing performance. The script can be run as follows:
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /1_tuning_scripts/rep_sample_generator.py --folder 5_inputs/input_pdbs
 ```
-### partial_T_tuner.py
+### partialT_tuner.py
 partial T is a parameter of the RF diffusion "partial diffusion" mode. It determines how much noise will be introduced in a given structure before RF diffusion denoises it, generating a variability of different backbones from the original one. Too little noise can lead to negligible changes, while too much can result in completely different folds. To adjust it, 3 values (10,20,30) were tested over the representative sample using the following process:
 1. For each input structure, 3 backbones are generated with RF diffusion "partial diffusion", one per partial T value.
 2. Sequence for each backbone is predicted using ProteinMPNN (Dauparas et al.,2022). 20 sequences are generated per backbone, lowest global_score is selected
@@ -27,7 +27,7 @@ partial T is a parameter of the RF diffusion "partial diffusion" mode. It determ
 5. Metrics generated for the backbones are saved as a csv.file
 Knowing the RMSD, alignments were visualised in Pymol to confirm fold similarity. After this analysis it was determined that a partial T of 20 would be used. The script can be run as follows
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /1_tuning_scripts/partialT_tuner.py --folder 5_inputs/input_pdbs --sample 6_outputs/representative_sample.csv
 ```
 ### prediction_performance.py 
 Several protein structure prediction methods were considered for the project: Alphafold 3 (without MSA generation step)(Abramson et al., 2024), ESM Fold (Lin et al., 2023) and Chai 1 (Chai Discovery et al., 2024). To compare their performance, this script was developed and run to predict the structures of the backbones generated from the representative sample. For each input sequence structure is predicted and run time, pLDDT and RMSD with the original structure are calculated for each method.
@@ -36,7 +36,7 @@ At the light of the results, ESM Fold was selected for high throughput predictio
 
 The script can be run as follows:
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /1_tuning_scripts/prediction_performance.py --sequences 6_outputs/partial_T_sampling.csv
 ```
 # 2_main_scripts 
 ---
@@ -65,7 +65,7 @@ There are 3 subgroups of functions inside functions.py:
 - Auxiliary functions: complementary utilities such as organising folders, convert and rename files...
 The improved_pipeline.py script can be run as follows:
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /2_main_scripts/improved_shapedesigned.py --folder 5_inputs/input_pdbs --detailed-help
 ```
 ![My diagram](images/Figure%203.png)
 ### benchmark.py and functions_benchmark.py
@@ -84,7 +84,7 @@ The functions in functions_benchmark.py are organised in 3 subgroups:
   
 The benchmark.py script can be run as follows:
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /2_main_scripts/benchmark.py --w 5_inputs/96_capsids_w --wo 5_inputs/96_capsids_wo --original_pdbs 5_inputs/input_pdbs --detailed-help
 ```
 ![My diagram](images/Figure%202.png)
 ### control_shapedesign.py 
@@ -95,7 +95,7 @@ A control script was designed to obtain capsids with the same capsid filtering p
 
 The benchmark.py script can be run as follows:
 ```bash
-python /1_tuning_scripts/rep_sample_generator.py 
+python /2_main_scripts/control_shapedesign.py --folder 5_inputs/input_pdbs --detailed-help
 ```
 # 3_auxiliary_scripts
 ---
@@ -120,7 +120,7 @@ Input pdbs contains 96 protein structures selected from the Protein Building Blo
 
 Symdefs contains the corresponding symmetry definition for each input pdb. A symmetry definition is the set of mathematical transformations needed to generate a whole capsid by repeating a single capsomer. Each input pdb has assigned to itself the symmetry definition of the natural capsid where the ideal shape with which they match was extracted.
 
-Additionally, although it is technically an output from the improved shapedesign and the control, the capsids generated in the project have also been made available here: ; as they are needed to reproduce the benchmarking process
+Additionally, although it is technically an output from the improved shapedesign and the control, the capsids generated in the project have also been made available here: https://doi.org/10.5281/zenodo.16890322 (96_capsids_w) https://doi.org/10.5281/zenodo.16890348 (96_capsids_wo); as they are needed to reproduce the benchmarking process
 # 6_outputs
 ---
 Here I break down each of the metrics generated at different stages of the project, in chronological order:
