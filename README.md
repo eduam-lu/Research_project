@@ -2,7 +2,7 @@
 ---
 Welcome to the github repo for my LU Msc in Bioinformatics' Research project titled "Enhancing shape directed design of protein containers’ subunits using the generative AI method RFdiffusion" (https://github.com/eduam-lu/Research_project/). Here I have made available all the code generated, all the input structures and data needed to replicate my analyses, the data produced as an output and used for visualization of results and ,lastly , all the environments, software versions and programs used in the project.
 
-The project consists on the complementation of the Proteinshapedesign pipeline developed in "A dance with Protein Assemblies" Mads Jeppesen, 2025. This software is built to redesign an input pdb structure (identified with a potential to serve as a capsomer for self assembling capsids), optimising it for capsid formation. In this work, I have tested the viability of introducing an RF diffusion pretreatment to the input structures. RF diffusion is a denoising diffusion neural network model that is able to generate protein backbone variability from a given input structure. By generating and filtering structural variability over the inputs for ProteinShapedesign, we expected to obtained better capsomers from the original software. Results are discussed in the Report.pdf file.
+The project consists on the complementation of the Proteinshapedesign pipeline developed in Jeppesen, 2025 and Jeppesen, A., André, I., 2024. This software is built to redesign an input pdb structure (identified with a potential to serve as a capsomer for self assembling capsids), optimising it for capsid formation. In this work, I have tested the viability of introducing an RF diffusion pretreatment to the input structures. RF diffusion is a denoising diffusion neural network model that is able to generate protein backbone variability from a given input structure (Watson et al.,2022). By generating and filtering structural variability over the inputs for ProteinShapedesign, we expected to obtained better capsomers from the original software. Results are discussed in the Report.pdf file.
 
 Below, I break down the contents of each folder of the repo, explain how each script works briefly and how to run it; and finally, showcase external programs used in the project and how to download them
 # 1_tuning_scripts
@@ -21,7 +21,7 @@ python /1_tuning_scripts/rep_sample_generator.py
 ### partial_T_tuner.py
 partial T is a parameter of the RF diffusion "partial diffusion" mode. It determines how much noise will be introduced in a given structure before RF diffusion denoises it, generating a variability of different backbones from the original one. Too little noise can lead to negligible changes, while too much can result in completely different folds. To adjust it, 3 values (10,20,30) were tested over the representative sample using the following process:
 1. For each input structure, 3 backbones are generated with RF diffusion "partial diffusion", one per partial T value.
-2. Sequence for each backbone is predicted using ProteinMPNN. 20 sequences are generated per backbone, lowest global_score is selected
+2. Sequence for each backbone is predicted using ProteinMPNN (Dauparas et al.,2022). 20 sequences are generated per backbone, lowest global_score is selected
 3. Structure from sequence is predicted with Alphafold3
 4. RF generated structures are aligned with their corresponding original structure and RMSD is calculated with Biopython's superimposer function
 5. Metrics generated for the backbones are saved as a csv.file
@@ -30,7 +30,7 @@ Knowing the RMSD, alignments were visualised in Pymol to confirm fold similarity
 python /1_tuning_scripts/rep_sample_generator.py 
 ```
 ### prediction_performance.py 
-Several protein structure prediction methods were considered for the project: Alphafold 3 (without MSA generation step), ESM Fold and Chai 1. To compare their performance, this script was developed and run to predict the structures of the backbones generated from the representative sample. For each input sequence structure is predicted and run time, pLDDT and RMSD with the original structure are calculated for each method.
+Several protein structure prediction methods were considered for the project: Alphafold 3 (without MSA generation step)(Abramson et al., 2024), ESM Fold (Lin et al., 2023) and Chai 1 (Chai Discovery et al., 2024). To compare their performance, this script was developed and run to predict the structures of the backbones generated from the representative sample. For each input sequence structure is predicted and run time, pLDDT and RMSD with the original structure are calculated for each method.
 
 At the light of the results, ESM Fold was selected for high throughput prediction for its outstanding speed and Chai 1 is selected for final predictions given its higher accuracy, being designed to work on single sequence as well, and for validation by predicting structure with two different architectures.
 
@@ -45,7 +45,7 @@ This folder contain the scripts for running the improved pipeline and the code u
 The improved pipeline accepts an input folder with .pdb structures and another with the corresponding symmetry definitions. They are processed as follows:
 1. Input is checked to be correct and loaded as a pandas dataframe. For each structure, the sequence and global fold stability is extracted
 2. Each input structure is subjected to 10 iterations of RF diffusion in "partial diffusion" mode and another 10 in "fold conditioning" mode. Output backbones are saved in a subfolder
-3. For each backbone generated, 40 sequences are predicted with ProteinMPNN. Output fastas are saved in a sepparate folder
+3. For each backbone generated, 40 sequences are predicted with ProteinMPNN . Output fastas are saved in a sepparate folder
 4. Sequences and global scores are extracted from the fastas and appended to a dataframe. For each backbone, the top 20 sequences regarding global_score are selected
 5. Sequences are filtered again with a 1D complexity filter (removes seqs with more than 4 of the same aminoacid in a row)
 6. High throughput structure prediction round with ESM fold (atlas webserver). Output structures are saved in a subfolder and failed predictions are removed
@@ -74,7 +74,7 @@ benchmark.py requires a folder of capsids with treatment, a folder of capsids wi
 1. Inputs are checked to be correct, ensuring that the samples of capsids with treatment match those of capsids without treatment
 2. From every capsid, a monomer, dimer, trimer and pentamer are extracted and segregated to the corresponding folder.
 3. Sequences from the extracted monomers is extracted and used to predict dimers, trimers and pentamers for each sample with and without treatment. Predicted complexes are organised in corresponding folders
-4. Monomer metrics are calculated for each sample, with and without treatment. Stability, Solubility Hydropathy, TM score with the original, TM score extracted vs predicted, TM score extracted w vs extracted wo and pLDDT
+4. Monomer metrics are calculated for each sample, with and without treatment. Stability, Solubility through the program Protein-sol (Heibditch et al., 2017) and hydropathy through a Kyte Dolitle approach (Kyte et al., 1982) , TM score with the original, TM score extracted vs predicted, TM score extracted w vs extracted wo and pLDDT
 5. Oligomer metrics are calculated for each sample, with and without treatment. TM score extracted vs predicted and pLDDT of the prediction
 Further analysis and visualizations are performed in the visualization scripts (see below)
 The functions in functions_benchmark.py are organised in 3 subgroups:
@@ -162,24 +162,25 @@ Additionally, some of the programs used in the project need to be downloaded man
 Lastly, the code for running protein shapedesign isn't publicly available yet. It is available for request at ingemar.andre@biochemistry.lu.se
 # References
 ---
-Mads thesis
 
-RF diffusion
+Abramson, J., Adler, J., Dunger, J., Evans, R., Green, T., Pritzel, A., Ronneberger, O., Willmore, L., Ballard, A. J., Bambrick, J., Bodenstein, S. W., Evans, D. A., Hung, C.-C., O’Neill, M., Reiman, D., Tunyasuvunakool, K., Wu, Z., Žemgulytė, A., Arvaniti, E., … Jumper, J. M. (2024). Accurate structure prediction of biomolecular interactions with AlphaFold 3. Nature, 630(8016), 493–500. https://doi.org/10.1038/s41586-024-07487-wChai Discovery, Boitreaud, J., Dent, J., McPartlon, M., Meier, J., Reis, V., Rogozhnikov, A., & Wu, K. (2024). Chai-1: Decoding the molecular interactions of life. Synthetic Biology. https://doi.org/10.1101/2024.10.10.615955
 
-DSSP
+Dauparas, J., Anishchenko, I., Bennett, N., Bai, H., Ragotte, R. J., Milles, L. F., Wicky, B. I. M., Courbet, A., de Haas, R. J., Bethel, N., Leung, P. J. Y., Huddy, T. F., Pellock, S., Tischer, D., Chan, F., Koepnick, B., Nguyen, H., Kang, A., Sankaran, B., … Baker, D. (2022). Robust deep learning–based protein sequence design using ProteinMPNN. Science, 378, 49–56. https://doi.org/10.1126/science.add2187
 
-Relaxation
+Hebditch, M., Carballo-Amador, M. A., Charonis, S., Curtis, R., & Warwicker, J. (2017). Protein–Sol: A web tool for predicting protein solubility from sequence. Bioinformatics, 33(19), 3098–3100. https://doi.org/10.1093/bioinformatics/btx345
 
-Chai
+Jeppesen, M. (2025). A Dance with Protein Assemblies.
 
-Alphafold
+Jeppesen, M., & André, I. (2024). A Method to Design Protein Cages Based on Shape.
 
-ESM
+Kabsch, W., & Sander, C. (1983). Dictionary of protein secondary structure: Pattern recognition of hydrogen‐bonded and geometrical features. Biopolymers, 22(12), 2577–2637. https://doi.org/10.1002/bip.360221211
 
-MPN
+Kyte, J., & Doolittle, R. F. (1982). A simple method for displaying the hydropathic character of a protein. Journal of Molecular Biology, 157(1), 105–132. https://doi.org/10.1016/0022-2836(82)90515-0
 
-Protein-sol
+Lin, Z., Akin, H., Rao, R., Hie, B., Zhu, Z., Lu, W., Fazel-Zarandi, M., Sercu, T., Candido, S., & Rives, A. (2023). Language models of protein sequences at the scale of evolution enable accurate structure prediction. Science, 379. https://doi.org/10.1126/science.ade2574
 
-Kyte dolittle
+Watson, J. L., Juergens, D., Bennett, N. R., Trippe, B. L., Yim, J., Eisenach, H. E., Ahern, W., Borst, A. J., Ragotte, R. J., Milles, L. F., Wicky, B. I. M., Hanikel, N., Pellock, S. J., Courbet, A., Sheffler, W., Wang, J., Venkatesh, P., Sappington, I., Torres, S. V., … Baker, D. (2022). Broadly applicable and accurate protein design by integrating structure prediction networks and diffusion generative models. Biochemistry. https://doi.org/10.1101/2022.12.09.519842
 
-DSSP
+
+
+
