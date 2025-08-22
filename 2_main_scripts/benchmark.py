@@ -1,6 +1,18 @@
 #
 """
 benchmark.py --original_pdbs --w --wo --detailed-help
+
+This script is designed to benchmark the improved shapedesign pipeline by comparing its output capsids with capsids generated without shapedesign. The script:
+
+A. Checks the arguments and input folders
+B. Files are renamed to lowercase and check that each sample has a corresponding with and without version
+C. Extracts of monomers and oligomers from capsids with and without using pymol
+D. Organises of extracted complexes in subfolders
+E. Uses extracted monomers for multimer prediction with Chai1
+F. Predictions are organised in subfolders
+G. Different metrics are calculated for monomers, dimers, trimers and pentamers
+
+The behaviour of each function is detailed in the functions_benchmark.py script
 """
 ####################################################################################################################
 ### IMPORT MODULES            ######################################################################################
@@ -38,7 +50,8 @@ if not args.w or not args.wo :
 if not args.original_pdbs :
     parser.error("--original_pdbs folder is required unless --detailed-help is used") 
 
-# Convert to Path object
+# Convert to Path objects
+
 original_pdbs = Path(args.original_pdbs)
 w_folder = Path(args.w)
 wo_folder = Path(args.wo)
@@ -66,18 +79,21 @@ if not wo_folder.is_dir():
 ####################################################################################################################
 ### SET UP OUTPUT             ######################################################################################
 ####################################################################################################################
-# Generate the global folder, making sure that it doesn't exist already
-global_output_name=Path("benchmark_output_04-07_def")
-#count=1
-#while global_output_name.exists():
- #   global_output_name = Path(f"{global_output_name}_{count}")
-  #  count += 1
+
+# Generate the global folder, making sure that it doesn't exist already by several iterations
+
+global_output_name=Path("benchmark_output")
+count=1
+while global_output_name.exists():
+    global_output_name = Path(f"{global_output_name}_{count}")
+    count += 1
 
 global_output_name.mkdir(parents=True, exist_ok=True)
 
 ####################################################################################################################
 ### SET UP LOG FILE           ######################################################################################
 ####################################################################################################################
+
 logging.basicConfig(
     filename=f"{str(global_output_name)}/shapedesign_benchmark.log",       # Log file path
     filemode='a',                   # Append mode
@@ -90,16 +106,21 @@ def save_to_log(message):
 ####################################################################################################################
 ### MAIN EXECUTION            ######################################################################################
 ####################################################################################################################
+
 save_to_log("INITIALISING BENCHMARKING")
-# 0. Format the names of all the input_files, so that they are all lowercase ###########################################
+
+# 0. Format input files to lowercase and check matching ###########################################
 save_to_log("Processing input files")
+
 func.rename_files_to_lowercase(original_pdbs)
 func.rename_files_to_lowercase(w_folder)
 func.rename_files_to_lowercase(wo_folder)
-func.check_matching(w_folder, wo_folder)
+func.check_matching(w_folder, wo_folder) # Check that the folders have matching samples and remove those that don't match
+
 # 1. Extraction of monomers, dimers, trimers, pentamers ############################################################
 save_to_log("Extracting substructures from the input capsids")
 
+# Create extracted folders
 extracted_w_folder = f"{global_output_name}/extracted_w"
 extracted_wo_folder = f"{global_output_name}/extracted_wo"
 Path(extracted_w_folder).mkdir(exist_ok=True,parents=True)
@@ -107,62 +128,72 @@ Path(extracted_wo_folder).mkdir(exist_ok=True,parents=True)
 
 func.extraction(w_folder,extracted_w_folder)
 func.extraction(wo_folder,extracted_wo_folder)
-save_to_log("Finished extraction")
-# 2. Prediction of monomers, dimers, trimers, pentamers ############################################################
 
+save_to_log("Finished extraction")
+
+# 2. Prediction of monomers, dimers, trimers, pentamers ############################################################
 save_to_log("Starting prediction of substructures")
 
-### IMPORTANT: I need to parse the monomer folder
+# Create prediction folder
 prediction_w_folder = f"{global_output_name}/prediction_w"
 prediction_wo_folder = f"{global_output_name}/prediction_wo"
 Path(prediction_w_folder).mkdir(exist_ok=True,parents=True)
 Path(prediction_wo_folder).mkdir(exist_ok=True,parents=True)
 
-func.run_chai_folder(f"{extracted_w_folder}/monomers",prediction_w_folder)
+func.run_chai_folder(f"{extracted_w_folder}/monomers",prediction_w_folder) #Parse the monomer folder to extract a single sequence
 func.run_chai_folder(f"{extracted_wo_folder}/monomers",prediction_wo_folder)
 
 save_to_log("Finished prediction of substructures")
+
 # Reorganise predictions into a clearer structure
+save_to_log("Formating prediction folders")
+
 organised_prediction_w_folder = f"{global_output_name}/organised_prediction_w"
 organised_prediction_wo_folder = f"{global_output_name}/organised_prediction_wo"
 Path(organised_prediction_w_folder).mkdir(exist_ok=True,parents=True)
 Path(organised_prediction_wo_folder).mkdir(exist_ok=True,parents=True)
 
-save_to_log("Formating prediction folders")
 func.organise_chai_folder(prediction_w_folder,organised_prediction_w_folder)
 func.organise_chai_folder(prediction_wo_folder,organised_prediction_wo_folder)
 
 # 3. Metrics calculation ###########################################################################################
 save_to_log("Starting metrics calculation")
-#Generate alignment outputs
+
+#Generate alignment outputs for visualisation
 folders = ["predicted_v_extracted_w", "predicted_v_extracted_wo","predicted_w_v_wo"]
 subfolders = ["monomers","dimers","trimers","pentamers"]
 for folder in folders:
     for subfolder in subfolders:
         Path(f"{global_output_name}/alignments/{folder}/{subfolder}").mkdir(exist_ok=True, parents=True)
+        
 # 3.1 Monomers #####################################################################################################
+
 monomer_metrics = func.monomer_df(f"{organised_prediction_w_folder}/monomers", f"{organised_prediction_wo_folder}/monomers", global_output_name,str(original_pdbs))
 monomer_metrics.to_csv(f"{global_output_name}/monomer_metrics_2.csv")
 save_to_log("Finished monomers metrics calculation")
 
 # 3.2 Dimers #######################################################################################################
+
 dimer_metrics = func.dimer_df(f"{organised_prediction_w_folder}/dimers", f"{organised_prediction_wo_folder}/dimers", global_output_name)
 dimer_metrics.to_csv(f"{global_output_name}/dimer_metrics.csv")
 save_to_log("Finished dimers metrics calculation")
 
 # 3.3 Trimers ######################################################################################################
+
 trimer_metrics = func.mer_df(f"{organised_prediction_w_folder}/trimers", f"{organised_prediction_wo_folder}/trimers", global_output_name, "trimer")
 trimer_metrics.to_csv(f"{global_output_name}/trimer_metrics.csv")
 save_to_log("Finished trimers metrics calculation")
 # 3.4 Pentamers ####################################################################################################
+
 pentamer_metrics = func.mer_df(f"{organised_prediction_w_folder}/pentamers", f"{organised_prediction_wo_folder}/pentamers", global_output_name, "pentamer")
 pentamer_metrics.to_csv(f"{global_output_name}/pentamer_metrics.csv")
+save_to_log("Finished pentamers metrics calculation")
 
 # 3.5 Capsids ######################################################################################################
 
-save_to_log("Finished pentamers metrics calculation")
 
 ### PLOTTING #######################################################################################################
+
 plot_output = f"{global_output_name}/plots"
 Path(plot_output).mkdir(parents=True, exist_ok=True)
 # Define keys
