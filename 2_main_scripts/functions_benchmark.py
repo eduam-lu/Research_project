@@ -1,6 +1,8 @@
 #
 """
-
+This script contains the functions needed to run the script benchmark.py
+Function index:
+A.
 """
 ### IMPORT MODULES ##################################################################################################
 import subprocess
@@ -21,8 +23,20 @@ from tmscoring import TMscoring
 import json
 import tempfile
 pymol.finish_launching(['pymol', '-cq'])
+
 ### EXTRACTION FUNCTIONS ############################################################################################
+
 def extraction(folder,output_path):
+    """
+    Use PyMOL to extract specified chains from a PDB and save to a new file.
+
+    Parameters:
+    - pdb_path: Path object
+    - output_path: Path to folder
+    - chains_to_extract: list of str (e.g., ['A', 'B'])
+    - label: str, a label to append to the output filename (e.g., 'dimer')
+    """
+    
     # Generate subfolders
     monomer_path = f"{output_path}/monomers"
     dimer_path = f"{output_path}/dimers"
@@ -32,13 +46,13 @@ def extraction(folder,output_path):
     Path(dimer_path).mkdir(exist_ok=True, parents =True)
     Path(trimer_path).mkdir(exist_ok=True, parents =True)
     Path(pentamer_path).mkdir(exist_ok=True, parents =True)
+    
     # Determine chains to extract
     monomer_chains =['A']
     dimer_chains =['A','B']
     trimer_chains =['A','J','K']
     pentamer_chains =['A','B','C','D','E']
-
-
+    
     # Parse the input
     for file in Path(folder).iterdir():
         # Monomers
@@ -49,6 +63,7 @@ def extraction(folder,output_path):
         extract_chains(file, trimer_path, trimer_chains, "trimer")
         # Pentamers
         extract_chains(file, pentamer_path, pentamer_chains, "pentamer")
+        
     return
 
 def extract_chains(pdb_path, output_path, chains_to_extract, label):
@@ -61,6 +76,7 @@ def extract_chains(pdb_path, output_path, chains_to_extract, label):
     - chains_to_extract: list of str (e.g., ['A', 'B'])
     - label: str, a label to append to the output filename (e.g., 'dimer')
     """
+    
     base_name = pdb_path.stem
     output_file = Path(output_path) / f"{base_name}_{label}.pdb"
 
@@ -69,15 +85,20 @@ def extract_chains(pdb_path, output_path, chains_to_extract, label):
     cmd.select("extracted", selection_str)
     cmd.save(str(output_file), "extracted")
     cmd.delete("all")
+    
+    return
 
 ### PREDICTION FUNCTIONS ############################################################################################
 
 def run_chai_mer(file, output_path, n_mer:str):
+    
     mer_dict = {"monomer":1,
                 "dimer": 2,
                 "trimer": 3,
                 "pentamer":5}
+    
     sequence = extract_seq_pdb(file)[0]
+    
     # Create the full path for the temporary FASTA file
     fasta_path = f"{output_path}/temp.fa"
 
